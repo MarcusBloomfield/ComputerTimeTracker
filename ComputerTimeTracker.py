@@ -10,14 +10,13 @@ class TimeTracker:
         self.root.resizable(False, False)
         
         # Initialize timer variables
-        self.start_time = time.time()
+        self.first_timer_seconds = 0
+        self.first_timer_milliseconds = 0
         self.first_timer_running = True
-        self.first_timer_paused_time = 0
-        self.first_timer_elapsed = 0
         
+        self.second_timer_seconds = 0
+        self.second_timer_milliseconds = 0
         self.second_timer_running = False
-        self.second_timer_start = 0
-        self.second_timer_elapsed = 0
         
         # First timer section
         self.timer1_frame = tk.LabelFrame(root, text="Idle Time", padx=10, pady=10)
@@ -86,40 +85,33 @@ class TimeTracker:
         # Start updating the timers
         self.update_timer()
     
-    def format_time_with_ms(self, seconds):
+    def format_time_with_ms(self, seconds, milliseconds):
         """Format time with milliseconds"""
-        # Get integer seconds
-        int_seconds = int(seconds)
-        # Get milliseconds and format to 3 digits
-        milliseconds = int((seconds - int_seconds) * 1000)
-        
         # Format using timedelta for hours, minutes, seconds
-        time_str = str(timedelta(seconds=int_seconds))
+        time_str = str(timedelta(seconds=seconds))
         
         # Add milliseconds
         return f"{time_str}.{milliseconds:03d}"
     
     def update_timer(self):
-        # Update first timer
+        # Update millisecond counters (50ms increments)
         if self.first_timer_running:
-            if self.first_timer_paused_time == 0:
-                # Running from the beginning
-                elapsed_seconds = time.time() - self.start_time
-            else:
-                # Running after being paused
-                elapsed_seconds = self.first_timer_elapsed + (time.time() - self.first_timer_paused_time)
-        else:
-            elapsed_seconds = self.first_timer_elapsed
-            
-        formatted_time1 = self.format_time_with_ms(elapsed_seconds)
+            self.first_timer_milliseconds += 50
+            if self.first_timer_milliseconds >= 1000:
+                self.first_timer_seconds += 1
+                self.first_timer_milliseconds -= 1000
+        
+        if self.second_timer_running:
+            self.second_timer_milliseconds += 50
+            if self.second_timer_milliseconds >= 1000:
+                self.second_timer_seconds += 1
+                self.second_timer_milliseconds -= 1000
+        
+        # Update displays
+        formatted_time1 = self.format_time_with_ms(self.first_timer_seconds, self.first_timer_milliseconds)
         self.time1_label.config(text=formatted_time1)
         
-        # Update second timer
-        if self.second_timer_running:
-            current_elapsed = time.time() - self.second_timer_start + self.second_timer_elapsed
-        else:
-            current_elapsed = self.second_timer_elapsed
-        formatted_time2 = self.format_time_with_ms(current_elapsed)
+        formatted_time2 = self.format_time_with_ms(self.second_timer_seconds, self.second_timer_milliseconds)
         self.time2_label.config(text=formatted_time2)
         
         # Schedule the next update (50ms for smoother millisecond updates)
@@ -128,40 +120,33 @@ class TimeTracker:
     def toggle_active_timer(self):
         if self.first_timer_running:
             # Pause Idle timer
-            self.first_timer_elapsed = time.time() - self.start_time
-            if self.first_timer_paused_time > 0:
-                self.first_timer_elapsed += (time.time() - self.first_timer_paused_time)
             self.first_timer_running = False
             self.status1_label.config(text="PAUSED", fg="red")
             
             # Start Work timer
-            self.second_timer_start = time.time()
             self.second_timer_running = True
             self.status2_label.config(text="RUNNING", fg="green")
             self.toggle_button.config(text="Switch to Idle")
         else:
             # Pause Work timer
-            self.second_timer_elapsed += time.time() - self.second_timer_start
             self.second_timer_running = False
             self.status2_label.config(text="PAUSED", fg="red")
             
             # Start Idle timer
-            self.first_timer_paused_time = 0  # Reset paused time marker
             self.first_timer_running = True
             self.status1_label.config(text="RUNNING", fg="green")
             self.toggle_button.config(text="Switch to Work")
     
     def reset_timers(self):
         # Reset both timers
-        self.start_time = time.time()
+        self.first_timer_seconds = 0
+        self.first_timer_milliseconds = 0
         self.first_timer_running = True
-        self.first_timer_paused_time = 0
-        self.first_timer_elapsed = 0
         self.status1_label.config(text="RUNNING", fg="green")
         
+        self.second_timer_seconds = 0
+        self.second_timer_milliseconds = 0
         self.second_timer_running = False
-        self.second_timer_start = 0
-        self.second_timer_elapsed = 0
         self.status2_label.config(text="PAUSED", fg="red")
         
         # Reset toggle button text
