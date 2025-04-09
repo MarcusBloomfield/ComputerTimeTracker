@@ -11,11 +11,9 @@ class TimeTracker:
         
         # Initialize timer variables
         self.first_timer_seconds = 0
-        self.first_timer_milliseconds = 0
         self.first_timer_running = True
         
         self.second_timer_seconds = 0
-        self.second_timer_milliseconds = 0
         self.second_timer_running = False
         
         # First timer section
@@ -24,7 +22,7 @@ class TimeTracker:
         
         self.time1_label = tk.Label(
             self.timer1_frame, 
-            text="00:00:00.000", 
+            text="00:00:00", 
             font=("Arial", 24, "bold")
         )
         self.time1_label.pack(pady=5)
@@ -43,7 +41,7 @@ class TimeTracker:
         
         self.time2_label = tk.Label(
             self.timer2_frame, 
-            text="00:00:00.000", 
+            text="00:00:00", 
             font=("Arial", 24, "bold")
         )
         self.time2_label.pack(pady=5)
@@ -85,37 +83,27 @@ class TimeTracker:
         # Start updating the timers
         self.update_timer()
     
-    def format_time_with_ms(self, seconds, milliseconds):
-        """Format time with milliseconds"""
-        # Format using timedelta for hours, minutes, seconds
-        time_str = str(timedelta(seconds=seconds))
-        
-        # Add milliseconds
-        return f"{time_str}.{milliseconds:03d}"
+    def format_time(self, seconds):
+        """Format time in HH:MM:SS format"""
+        return str(timedelta(seconds=seconds))
     
     def update_timer(self):
-        # Update millisecond counters (50ms increments)
+        # Update seconds counters
         if self.first_timer_running:
-            self.first_timer_milliseconds += 50
-            if self.first_timer_milliseconds >= 1000:
-                self.first_timer_seconds += 1
-                self.first_timer_milliseconds -= 1000
+            self.first_timer_seconds += 1
         
         if self.second_timer_running:
-            self.second_timer_milliseconds += 50
-            if self.second_timer_milliseconds >= 1000:
-                self.second_timer_seconds += 1
-                self.second_timer_milliseconds -= 1000
+            self.second_timer_seconds += 1
         
         # Update displays
-        formatted_time1 = self.format_time_with_ms(self.first_timer_seconds, self.first_timer_milliseconds)
+        formatted_time1 = self.format_time(self.first_timer_seconds)
         self.time1_label.config(text=formatted_time1)
         
-        formatted_time2 = self.format_time_with_ms(self.second_timer_seconds, self.second_timer_milliseconds)
+        formatted_time2 = self.format_time(self.second_timer_seconds)
         self.time2_label.config(text=formatted_time2)
         
-        # Schedule the next update (50ms for smoother millisecond updates)
-        self.root.after(50, self.update_timer)
+        # Schedule the next update (1 second interval)
+        self.root.after(1000, self.update_timer)
     
     def toggle_active_timer(self):
         if self.first_timer_running:
@@ -140,12 +128,10 @@ class TimeTracker:
     def reset_timers(self):
         # Reset both timers
         self.first_timer_seconds = 0
-        self.first_timer_milliseconds = 0
         self.first_timer_running = True
         self.status1_label.config(text="RUNNING", fg="green")
         
         self.second_timer_seconds = 0
-        self.second_timer_milliseconds = 0
         self.second_timer_running = False
         self.status2_label.config(text="PAUSED", fg="red")
         
@@ -153,8 +139,8 @@ class TimeTracker:
         self.toggle_button.config(text="Switch to Work")
         
         # Update displays immediately
-        self.time1_label.config(text="00:00:00.000")
-        self.time2_label.config(text="00:00:00.000")
+        self.time1_label.config(text="00:00:00")
+        self.time2_label.config(text="00:00:00")
 
 if __name__ == "__main__":
     root = tk.Tk()
