@@ -1,0 +1,4 @@
+Changelog for ComputerTimeTracker
+
+2024-06-22:
+- Rebuilt executable with PyInstaller disabling UPX compression to reduce false-positive antivirus detections. 
